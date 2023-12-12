@@ -1,15 +1,15 @@
 ﻿using System;
-using System.Reflection;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 
 namespace PythonNetStubGenerator
 {
     public static class StubBuilder
     {
         private static HashSet<DirectoryInfo> SearchPaths { get; } = new HashSet<DirectoryInfo>();
-        
+
         public static DirectoryInfo BuildAssemblyStubs(DirectoryInfo destPath, FileInfo[] targetAssemblyPaths, DirectoryInfo[] searchPaths = null)
         {
             // prepare resolver
@@ -21,7 +21,7 @@ namespace PythonNetStubGenerator
             {
                 var assemblyToStub = Assembly.LoadFrom(targetAssemblyPath.FullName);
                 SearchPaths.Add(targetAssemblyPath.Directory);
-                
+
                 if (searchPaths != null)
                     foreach (var path in SearchPaths)
                         SearchPaths.Add(path);
@@ -29,7 +29,7 @@ namespace PythonNetStubGenerator
                 Console.WriteLine($"Generating Assembly: {assemblyToStub.FullName}");
                 foreach (var exportedType in assemblyToStub.GetExportedTypes())
                 {
-                    if(!exportedType.IsVisible) continue;
+                    if (!exportedType.IsVisible) continue;
                     PythonTypes.AddDependency(exportedType);
                 }
             }
@@ -40,7 +40,7 @@ namespace PythonNetStubGenerator
 
             foreach (var exportedType in typeAssembly.GetExportedTypes())
             {
-                if(!exportedType.IsVisible) continue;
+                if (!exportedType.IsVisible) continue;
                 PythonTypes.AddDependency(exportedType);
             }
 
@@ -48,7 +48,7 @@ namespace PythonNetStubGenerator
             Console.WriteLine($"Generating Built-in Assembly: {consoleAssembly.FullName}");
             foreach (var exportedType in consoleAssembly.GetExportedTypes())
             {
-                if(!exportedType.IsVisible) continue;
+                if (!exportedType.IsVisible) continue;
                 PythonTypes.AddDependency(exportedType);
             }
 
