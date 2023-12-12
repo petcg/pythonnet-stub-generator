@@ -29,7 +29,8 @@ namespace PythonNetStubGenerator
                 Console.WriteLine($"Generating Assembly: {assemblyToStub.FullName}");
                 foreach (var exportedType in assemblyToStub.GetExportedTypes())
                 {
-                    if (!exportedType.IsVisible) continue;
+                    if (!exportedType.IsVisible)
+                        continue;
                     PythonTypes.AddDependency(exportedType);
                 }
             }
@@ -40,7 +41,8 @@ namespace PythonNetStubGenerator
 
             foreach (var exportedType in typeAssembly.GetExportedTypes())
             {
-                if (!exportedType.IsVisible) continue;
+                if (!exportedType.IsVisible)
+                    continue;
                 PythonTypes.AddDependency(exportedType);
             }
 
@@ -48,7 +50,8 @@ namespace PythonNetStubGenerator
             Console.WriteLine($"Generating Built-in Assembly: {consoleAssembly.FullName}");
             foreach (var exportedType in consoleAssembly.GetExportedTypes())
             {
-                if (!exportedType.IsVisible) continue;
+                if (!exportedType.IsVisible)
+                    continue;
                 PythonTypes.AddDependency(exportedType);
             }
 
@@ -115,7 +118,8 @@ namespace PythonNetStubGenerator
             foreach (var searchPath in SearchPaths)
             {
                 var assemblyPath = Path.Combine(searchPath.FullName, assemblyToResolve);
-                if (File.Exists(assemblyPath)) return Assembly.LoadFrom(assemblyPath);
+                if (File.Exists(assemblyPath))
+                    return Assembly.LoadFrom(assemblyPath);
             }
 
             return null;

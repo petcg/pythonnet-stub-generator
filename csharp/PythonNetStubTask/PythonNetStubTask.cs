@@ -10,12 +10,21 @@ namespace PythonNetStubTask
     public class PythonNetStubTask : Task
     {
         [Required]
-        public string DestPath { get; set; }
+        public string DestPath
+        {
+            get; set;
+        }
 
         [Required]
-        public string[] SourceDlls { get; set; }
+        public string[] SourceDlls
+        {
+            get; set;
+        }
 
-        public string[] AdditionalSearchPaths { get; set; }
+        public string[] AdditionalSearchPaths
+        {
+            get; set;
+        }
 
         public override bool Execute()
         {
