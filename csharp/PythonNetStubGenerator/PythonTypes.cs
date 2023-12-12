@@ -84,9 +84,11 @@ namespace PythonNetStubGenerator
 
         public static (string nameSpace, List<Type> types) RemoveDirtyNamespace()
         {
-            var key = DirtyNamespaces.FirstOrDefault();
+            if (DirtyNamespaces.Count() == 0)
+                return ("", new List<Type>());
+
+            var key = DirtyNamespaces.First();
             DirtyNamespaces.Remove(key);
-            if (key == null) return (null, new List<Type>());
             var results = AllExportedTypes.Where(it => it.Namespace == key).ToList();
             return (key, results);
         }

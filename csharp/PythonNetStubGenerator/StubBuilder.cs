@@ -56,7 +56,9 @@ namespace PythonNetStubGenerator
             while (true)
             {
                 var (nameSpace, types) = PythonTypes.RemoveDirtyNamespace();
-                if (nameSpace == null) break;
+
+                if (nameSpace == "")
+                    break;
 
                 // generate stubs for each type
                 WriteStub(destPath, nameSpace, types);
@@ -71,7 +73,23 @@ namespace PythonNetStubGenerator
             // sort the stub list so we get consistent output over time
             var orderedTypes = stubTypes.OrderBy(it => it.Name);
 
-            var path = nameSpace.Split('.').Aggregate(rootDirectory.FullName, Path.Combine);
+            string path;
+
+            if (nameSpace is null)
+            {
+                path = "global_";
+            }
+            else
+            {
+                var split = nameSpace.Split('.');
+
+                if (split[0] == "global_")
+                {
+                    throw new InvalidDataException("The namespace \"global_\" is reserved.");
+                }
+
+                path = split.Aggregate(rootDirectory.FullName, Path.Combine);
+            }
 
             if (!Directory.Exists(path))
                 Directory.CreateDirectory(path);
