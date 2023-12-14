@@ -7,12 +7,12 @@ using System.Text;
 
 namespace PythonNetStubGenerator
 {
-    public static class StubWriter
+    public static class StaticStubWriter
     {
         public static string GetStub(string nameSpace, IEnumerable<Type> stubTypes)
         {
             var types = stubTypes as Type[] ?? stubTypes.ToArray();
-            PythonTypes.CacheOverloadedNonGenericTypes(types);
+            StaticPythonTypes.CacheOverloadedNonGenericTypes(types);
             var typeGroups = types
                 .Where(it => it.IsVisible) // Avoid internal classes
                 .Where(it => it.DeclaringType == null) // Avoid Nested classes, they're handled later
@@ -23,7 +23,7 @@ namespace PythonNetStubGenerator
 
             var reservedSymbols = typeGroups.Select(it => it.Key);
 
-            using (new SymbolScope(reservedSymbols, nameSpace))
+            using (new StaticSymbolScope(reservedSymbols, nameSpace))
             {
                 foreach (var typeGroup in typeGroups)
                     WriteTypeGroup(sb, typeGroup.Key, typeGroup);
@@ -54,7 +54,7 @@ namespace PythonNetStubGenerator
             }
 
             var genericMetaclass = $"{typeName}_GenericClasses";
-            var currentGenerics = ClassScope.AccessibleGenerics.Select(it => it.ToPythonType()).CommaJoin();
+            var currentGenerics = StaticClassScope.AccessibleGenerics.Select(it => it.ToPythonType()).CommaJoin();
             if (!string.IsNullOrEmpty(currentGenerics))
                 currentGenerics = $"[{currentGenerics}]";
 
@@ -109,14 +109,14 @@ namespace PythonNetStubGenerator
 
         }
         public static void WriteClassHeader(
-            ClassScope classScope,
+            StaticClassScope classScope,
             StringBuilder sb,
             string className,
             List<string> classArguments = null,
             Dictionary<Type, string> genericAliases = null)
         {
             classArguments ??= new List<string>();
-            var generics = ClassScope.AccessibleGenerics.ToList();
+            var generics = StaticClassScope.AccessibleGenerics.ToList();
 
             var writtenAliases = new HashSet<string>();
 
@@ -182,9 +182,9 @@ namespace PythonNetStubGenerator
             sb.AppendLine();
 
 
-            var externalGenerics = ClassScope.AccessibleGenerics.ToList();
+            var externalGenerics = StaticClassScope.AccessibleGenerics.ToList();
             var newGenerics = Enumerable.Empty<Type>();
-            using var classScope = new ClassScope(overloadClassName, newGenerics, false);
+            using var classScope = new StaticClassScope(overloadClassName, newGenerics, false);
             WriteClassHeader(classScope, sb, overloadClassName, classArguments: new List<string>() { "abc.ABCMeta" });
 
 
@@ -249,7 +249,7 @@ namespace PythonNetStubGenerator
 
 
 
-            using (var classScope = new ClassScope(className, typeArguments, typeArguments.Any()))
+            using (var classScope = new StaticClassScope(className, typeArguments, typeArguments.Any()))
             {
 
                 var args = GetClassArguments(type);
@@ -310,17 +310,17 @@ namespace PythonNetStubGenerator
                 sb.Indent().AppendLine("import " + utilityDependencies.CommaJoin());
             }
 
-            var namespaces = PythonTypes.GetCurrentNamespaceDependencies();
+            var namespaces = StaticPythonTypes.GetCurrentNamespaceDependencies();
             foreach (var ns in namespaces)
             {
                 sb.AppendLine($"import {ns}");
             }
 
-            var depsByNamespace = PythonTypes.GetCurrentTypeDependencies()
+            var depsByNamespace = StaticPythonTypes.GetCurrentTypeDependencies()
                 .GroupBy(it => it.Namespace);
 
-            var usedBaseArray = PythonTypes.CurrentUsedBaseArray;
-            var usedGenericArray = PythonTypes.CurrentUsedGenericArray;
+            var usedBaseArray = StaticPythonTypes.CurrentUsedBaseArray;
+            var usedGenericArray = StaticPythonTypes.CurrentUsedGenericArray;
 
             foreach (var group in depsByNamespace)
             {
@@ -576,7 +576,7 @@ namespace PythonNetStubGenerator
 
             foreach (var property in properties)
             {
-                if (PythonTypes.IsReservedWord(property.Name))
+                if (StaticPythonTypes.IsReservedWord(property.Name))
                 {
                     sb.Indent().AppendLine($"# Skipped property {property.Name} since it is a reserved python word. Use reflection to access.");
                     continue;
@@ -660,13 +660,13 @@ namespace PythonNetStubGenerator
 
             var className = $"{methodName}_MethodGroup";
 
-            var currentGenerics = ClassScope.AccessibleGenerics.Select(it => it.ToPythonType()).CommaJoin();
+            var currentGenerics = StaticClassScope.AccessibleGenerics.Select(it => it.ToPythonType()).CommaJoin();
 
             if (!string.IsNullOrEmpty(currentGenerics))
                 currentGenerics = $"[{currentGenerics}]";
             sb.Indent().AppendLine($"{methodName} : {className}{currentGenerics}");
 
-            using (var classScope = new ClassScope(className, Enumerable.Empty<Type>(), false))
+            using (var classScope = new StaticClassScope(className, Enumerable.Empty<Type>(), false))
             {
                 WriteClassHeader(classScope, sb, className);
                 // We want to merge methods with the same amount of parameters with the same bounds
@@ -816,7 +816,7 @@ namespace PythonNetStubGenerator
                     aliasDictionary[param] = alias;
             }
 
-            var outerGenerics = ClassScope.AccessibleGenerics;
+            var outerGenerics = StaticClassScope.AccessibleGenerics;
 
             var indexerTypes = aliases.Select(it => $"typing.Type[{it}]");
             var typeVarsString = indexerTypes.CommaJoin();
@@ -834,7 +834,7 @@ namespace PythonNetStubGenerator
             sb.AppendLine();
 
 
-            using (var classScope = new ClassScope(methodClassName, aliasDictionary.Keys, false))
+            using (var classScope = new StaticClassScope(methodClassName, aliasDictionary.Keys, false))
             {
 
                 WriteClassHeader(classScope, sb, methodClassName, genericAliases: aliasDictionary);
@@ -947,7 +947,7 @@ namespace PythonNetStubGenerator
         {
             string GetParameter(ParameterInfo it)
             {
-                var name = PythonTypes.SafePythonName(it.Name);
+                var name = StaticPythonTypes.SafePythonName(it.Name);
                 var type = it.ParameterType.ToPythonType();
                 var defaultValue = it.HasDefaultValue ? " = ..." : "";
                 return $"{name}: {type}{defaultValue}";
@@ -979,7 +979,7 @@ namespace PythonNetStubGenerator
             for (var i = 0; i < names.Length; i++)
             {
                 var name = names[i];
-                name = PythonTypes.SafePythonName(name);
+                name = StaticPythonTypes.SafePythonName(name);
 
                 var val = Convert.ChangeType(values.GetValue(i), Type.GetTypeCode(stubType));
                 sb.Indent().AppendLine($"{name} : {stubType.ToPythonType()} # {val}");
