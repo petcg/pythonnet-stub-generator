@@ -80,7 +80,7 @@ namespace PythonNetStubTool
 
             try
             {
-                var dest = StubBuilder.BuildAssemblyStubs(destPath, infos.ToArray(), searchPaths);
+                var dest = StaticStubBuilder.BuildAssemblyStubs(destPath, infos.ToArray(), searchPaths);
                 Console.WriteLine($"stubs saved to {dest}");
                 return 0;
             }

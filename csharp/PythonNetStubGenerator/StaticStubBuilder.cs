@@ -6,7 +6,7 @@ using System.Reflection;
 
 namespace PythonNetStubGenerator
 {
-    public static class StubBuilder
+    public static class StaticStubBuilder
     {
         private static HashSet<DirectoryInfo> SearchPaths { get; } = new HashSet<DirectoryInfo>();
 
@@ -31,7 +31,7 @@ namespace PythonNetStubGenerator
                 {
                     if (!exportedType.IsVisible)
                         continue;
-                    PythonTypes.AddDependency(exportedType);
+                    StaticPythonTypes.AddDependency(exportedType);
                 }
             }
 
@@ -43,7 +43,7 @@ namespace PythonNetStubGenerator
             {
                 if (!exportedType.IsVisible)
                     continue;
-                PythonTypes.AddDependency(exportedType);
+                StaticPythonTypes.AddDependency(exportedType);
             }
 
             var consoleAssembly = typeof(Console).Assembly;
@@ -52,13 +52,13 @@ namespace PythonNetStubGenerator
             {
                 if (!exportedType.IsVisible)
                     continue;
-                PythonTypes.AddDependency(exportedType);
+                StaticPythonTypes.AddDependency(exportedType);
             }
 
 
             while (true)
             {
-                var (nameSpace, types) = PythonTypes.RemoveDirtyNamespace();
+                var (nameSpace, types) = StaticPythonTypes.RemoveDirtyNamespace();
 
                 if (nameSpace == "")
                     break;
@@ -99,9 +99,9 @@ namespace PythonNetStubGenerator
 
             path = Path.Combine(path, "__init__.pyi");
 
-            PythonTypes.ClearCurrent();
+            StaticPythonTypes.ClearCurrent();
 
-            var stubText = StubWriter.GetStub(nameSpace, orderedTypes);
+            var stubText = StaticStubWriter.GetStub(nameSpace, orderedTypes);
 
 
             File.WriteAllText(path, stubText);

@@ -6,10 +6,10 @@ using System.Text;
 
 namespace PythonNetStubGenerator
 {
-    public class ClassScope : IDisposable
+    public class StaticClassScope : IDisposable
     {
-        private static readonly List<ClassScope> ClassScopes = new List<ClassScope>();
-        public static ClassScope Current => ClassScopes.LastOrDefault();
+        private static readonly List<StaticClassScope> ClassScopes = new List<StaticClassScope>();
+        public static StaticClassScope Current => ClassScopes.LastOrDefault();
         public string PythonClass
         {
             get;
@@ -32,7 +32,7 @@ namespace PythonNetStubGenerator
             get; set;
         }
 
-        public ClassScope(string pythonClass, IEnumerable<Type> newGenerics, bool shouldShadowGenerics)
+        public StaticClassScope(string pythonClass, IEnumerable<Type> newGenerics, bool shouldShadowGenerics)
         {
             Generics = newGenerics.ToArray();
             ShouldShadowGenerics = shouldShadowGenerics;

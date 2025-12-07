@@ -6,7 +6,7 @@ using System.Reflection;
 
 namespace PythonNetStubGenerator
 {
-    public static class PythonTypes
+    public static class StaticPythonTypes
     {
         private static readonly HashSet<Type> AllExportedTypes = new HashSet<Type>();
         private static readonly HashSet<string> DirtyNamespaces = new HashSet<string>();
@@ -237,7 +237,7 @@ namespace PythonNetStubGenerator
                 return $"{s}.";
 
             var cleanName = type.CleanName();
-            if (SymbolScope.Scopes.Any(it => it.HasConflict(cleanName, type.Namespace)))
+            if (StaticSymbolScope.Scopes.Any(it => it.HasConflict(cleanName, type.Namespace)))
             {
                 AddNamespaceDependency(type.Namespace);
                 return $"{type.Namespace}.";
@@ -258,7 +258,7 @@ namespace PythonNetStubGenerator
 
         private static string GetGenericTypeParameterName(Type t)
         {
-            var currentScope = ClassScope.Current;
+            var currentScope = StaticClassScope.Current;
 
             var method = t.DeclaringMethod;
             var declType = t.DeclaringType;
